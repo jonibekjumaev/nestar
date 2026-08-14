@@ -10,8 +10,9 @@ import { DatabaseModule } from './database/database.module';
 
 @Module({
 	imports: [
-		ConfigModule.forRoot(),
+		ConfigModule.forRoot(), //.env ni uqish uchun
 		GraphQLModule.forRoot({
+			// rest api => graphql api
 			driver: ApolloDriver,
 			playground: true,
 			uploads: false,
