@@ -27,7 +27,7 @@ export class MemberResolver {
 		try {
 			console.log('Mutation: login');
 			console.log('input:', input);
-			return this.memberService.login();
+			return this.memberService.login(input);
 		} catch (err) {
 			console.log('Error: login');
 			throw new InternalServerErrorException(err);
