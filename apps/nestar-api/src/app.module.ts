@@ -14,7 +14,7 @@ import { DatabaseModule } from './database/database.module';
 		GraphQLModule.forRoot({
 			// rest api => graphql api
 			driver: ApolloDriver,
-			playground: true,
+			// playground: true,
 			uploads: false,
 			autoSchemaFile: true,
 		}),
