@@ -9,12 +9,10 @@ export class MemberResolver {
 	constructor(private readonly memberService: MemberService) {}
 
 	@Mutation(() => Member)
-	@UsePipes(ValidationPipe)
 	public async signup(@Args('input') input: MemberInput): Promise<Member> {
 		try {
 			console.log('Mutation: signup');
-			console.log('input:', input);
-			return this.memberService.signup(input);
+			return await this.memberService.signup(input);
 		} catch (err) {
 			console.log('Error: signup');
 			throw new InternalServerErrorException(err);
@@ -22,12 +20,11 @@ export class MemberResolver {
 	}
 
 	@Mutation(() => Member)
-	@UsePipes(ValidationPipe)
 	public async login(@Args('input') input: LoginInput): Promise<Member> {
 		try {
 			console.log('Mutation: login');
 			console.log('input:', input);
-			return this.memberService.login(input);
+			return await this.memberService.login(input);
 		} catch (err) {
 			console.log('Error: login');
 			throw new InternalServerErrorException(err);
