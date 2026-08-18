@@ -17,8 +17,9 @@ export class MemberService {
 			//Authentication via token
 			return result;
 		} catch (err) {
-			console.log('Error: signup');
-			throw new BadRequestException(err);
+			const message = err instanceof Error ? err.message : 'Unknown error occurred';
+			console.log('Error: Service.model', message);
+			throw new BadRequestException(Message.USED_MEMBER_NICK_OR_PHONE);
 		}
 	}
 
