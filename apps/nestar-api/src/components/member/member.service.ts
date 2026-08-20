@@ -18,8 +18,10 @@ export class MemberService {
 		input.memberPassword = await this.authService.hashPassword(input.memberPassword);
 
 		try {
-			const result = await this.memberModel.create(input);
-			//Authentication via token
+			const newMember = await this.memberModel.create(input);
+			const result: Member = newMember.toObject();
+			result.accessToken = await this.authService.createToken(result);
+
 			return result;
 		} catch (err) {
 			const message = err instanceof Error ? err.message : 'Unknown error occurred';
@@ -45,6 +47,10 @@ export class MemberService {
 
 		const isMatch = await this.authService.comparePassword(memberPassword, response.memberPassword);
 		if (!isMatch) throw new InternalServerErrorException(Message.WRONG_PASSWORD);
+
+		const responseObj: Member = response.toObject();
+		response.accessToken = await this.authService.createToken(responseObj);
+
 		return response;
 	}
 
