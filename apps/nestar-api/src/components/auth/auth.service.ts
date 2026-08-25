@@ -5,7 +5,7 @@ import { T } from '../../libs/types/common';
 import { JwtService } from '@nestjs/jwt';
 import { shapeInToMongoObjectId } from '../../libs/config';
 
-@Injectable()
+@Injectable() //Step -1
 export class AuthService {
 	constructor(private jwtService: JwtService) {}
 

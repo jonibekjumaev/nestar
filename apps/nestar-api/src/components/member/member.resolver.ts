@@ -5,10 +5,11 @@ import { Member } from '../../libs/dto/member/member';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
-import * as mongoose from 'mongoose';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { MemberType } from '../../libs/enums/member.enum';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { MemberUpdate } from '../../libs/dto/member/member.update';
+import type { ObjectId } from 'mongoose';
 
 @Resolver()
 export class MemberResolver {
@@ -24,13 +25,6 @@ export class MemberResolver {
 	public async login(@Args('input') input: LoginInput): Promise<Member> {
 		console.log('Mutation: login');
 		return await this.memberService.login(input);
-	}
-	@UseGuards(AuthGuard)
-	@Mutation(() => String)
-	public async updateMember(@AuthMember('_id') memberId: mongoose.Types.ObjectId): Promise<string> {
-		console.log('Mutation: updateMember');
-		console.log('memberId:', memberId);
-		return this.memberService.updateMember();
 	}
 
 	@UseGuards(AuthGuard)
@@ -48,6 +42,16 @@ export class MemberResolver {
 		console.log('Query: checkAuthRole');
 		console.log('memberNick:', authMember);
 		return `Hi ${authMember.memberNick},  you are ${authMember.memberType} (memberId: ${authMember._id.toString()})`;
+	}
+
+	@UseGuards(AuthGuard)
+	@Mutation(() => Member)
+	public async updateMember(
+		@Args('input') input: MemberUpdate,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Member> {
+		console.log('Mutation: updateMember');
+		return await this.memberService.updateMember(memberId, input);
 	}
 
 	@Query(() => String)

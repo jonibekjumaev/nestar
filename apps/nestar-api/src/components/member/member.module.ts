@@ -6,7 +6,7 @@ import MemberSchema from '../../schemas/Member.model';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-	imports: [MongooseModule.forFeature([{ name: 'Member', schema: MemberSchema }]), AuthModule],
+	imports: [MongooseModule.forFeature([{ name: 'Member', schema: MemberSchema }]), AuthModule], //Step -3
 	providers: [MemberResolver, MemberService],
 })
 export class MemberModule {}

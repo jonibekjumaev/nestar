@@ -12,6 +12,6 @@ import { AuthService } from './auth.service';
 		}),
 	],
 	providers: [AuthService],
-	exports: [AuthService],
+	exports: [AuthService], // Step -2
 })
 export class AuthModule {}
