@@ -13,3 +13,5 @@ export interface FormattedErrorExtensions {
 		message?: string;
 	};
 }
+
+export type ObjectId = import('mongoose').Types.ObjectId;

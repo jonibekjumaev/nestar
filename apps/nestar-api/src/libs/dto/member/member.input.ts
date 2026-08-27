@@ -44,7 +44,7 @@ export class LoginInput {
 
 @InputType()
 class AISearch {
-	@IsNotEmpty()
+	@IsOptional()
 	@Field(() => String, { nullable: true })
 	text?: string;
 }
@@ -62,7 +62,7 @@ export class AgentsInquiry {
 	limit!: number;
 
 	@IsOptional()
-	@IsIn(aviableAgentSorts)
+	@IsIn(aviableAgentSorts) // faqat shu array ichidagilarni sort larni qabul qiladi
 	@Field(() => String, { nullable: true })
 	sort?: string;
 
@@ -85,7 +85,7 @@ class MISearch {
 	@Field(() => MemberType, { nullable: true })
 	memberType?: MemberType;
 
-	@IsNotEmpty()
+	@IsOptional()
 	@Field(() => String, { nullable: true })
 	text?: string;
 }

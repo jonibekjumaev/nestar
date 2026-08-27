@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, ObjectId } from 'mongoose';
+import { Model } from 'mongoose';
 import { Member, Members } from '../../libs/dto/member/member';
 import { AgentsInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member/member.input';
 import { MemberStatus, MemberType } from '../../libs/enums/member.enum';
@@ -10,6 +10,7 @@ import { MemberUpdate, MemberUpdateByAdmin } from '../../libs/dto/member/member.
 import { ViewService } from '../view/view.service';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { T } from '../../libs/types/common';
+import type { ObjectId } from '../../libs/types/common';
 
 @Injectable()
 export class MemberService {
@@ -125,7 +126,7 @@ export class MemberService {
 			])
 			.exec();
 		if (!result) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-		return result[0];
+		return result[0] as Members;
 	}
 
 	public async getAllMembersByAdmin(input: MembersInquiry): Promise<Members> {
@@ -153,14 +154,14 @@ export class MemberService {
 
 		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
-		return result[0];
+		return result[0] as Members;
 	}
 
 	public async updateMemberByAdmin(input: MemberUpdateByAdmin): Promise<Member> {
-		const result: Member = await this.memberModel
-			.findOneAndUpdate({ _id: input._id }, { $set: input }, { new: true })
-			.exec();
+		const result = await this.memberModel.findOneAndUpdate({ _id: input._id }, { $set: input }, { new: true }).exec();
 		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
-		return result;
+
+		const updateMember: Member = result.toObject();
+		return updateMember;
 	}
 }
