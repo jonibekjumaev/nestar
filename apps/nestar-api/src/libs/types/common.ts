@@ -15,3 +15,9 @@ export interface FormattedErrorExtensions {
 }
 
 export type ObjectId = import('mongoose').Types.ObjectId;
+
+export interface StatisticModifier {
+	_id: ObjectId;
+	targetKey: string;
+	modifier: number;
+}
