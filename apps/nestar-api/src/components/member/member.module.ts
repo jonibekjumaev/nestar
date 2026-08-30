@@ -7,7 +7,16 @@ import { AuthModule } from '../auth/auth.module';
 import { ViewModule } from '../view/view.module';
 
 @Module({
-	imports: [MongooseModule.forFeature([{ name: 'Member', schema: MemberSchema }]), AuthModule, ViewModule], //Step -3
+	imports: [
+		MongooseModule.forFeature([
+			{
+				name: 'Member',
+				schema: MemberSchema,
+			},
+		]),
+		AuthModule,
+		ViewModule,
+	], //Step -3
 	providers: [MemberResolver, MemberService],
 	exports: [MemberService],
 })
