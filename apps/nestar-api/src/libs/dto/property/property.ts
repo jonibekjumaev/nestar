@@ -1,6 +1,7 @@
 import { Field, Float, Int, ObjectType } from '@nestjs/graphql';
 import type { ObjectId } from '../../types/common';
 import { PropertyLocation, PropertyStatus, PropertyType } from '../../enums/property.enum';
+import { Member } from '../member/member';
 
 @ObjectType()
 export class Property {
@@ -75,4 +76,9 @@ export class Property {
 
 	@Field(() => Date)
 	updatedAt!: Date;
+
+	/** from aggregation */
+
+	@Field(() => Member, { nullable: true })
+	memberData?: Member;
 }

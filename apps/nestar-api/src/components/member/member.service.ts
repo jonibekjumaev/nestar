@@ -77,7 +77,7 @@ export class MemberService {
 		return updatedMember;
 	}
 
-	public async getMember(memberId: ObjectId, targetId: ObjectId): Promise<Member> {
+	public async getMember(memberId: ObjectId | null, targetId: ObjectId): Promise<Member> {
 		const search = {
 			_id: targetId,
 			memberStatus: {
@@ -178,7 +178,6 @@ export class MemberService {
 			)
 			.exec();
 		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
-		const update = result;
-		return update;
+		return result;
 	}
 }
