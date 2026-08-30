@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
+import { AgentPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
 import { Properties, Property } from '../../libs/dto/property/property';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { MemberService } from '../member/member.service';
@@ -61,6 +61,22 @@ export class PropertyService {
 
 		targetProperty.memberData = await this.memberService.getMember(null, targetProperty.memberId);
 		return targetProperty;
+	}
+
+	public async propertyStatsEditor(input: StatisticModifier): Promise<Property> {
+		const { _id, targetKey, modifier } = input;
+		const result = await this.propertyModel
+			.findOneAndUpdate(
+				_id,
+				{
+					$inc: { [targetKey]: modifier },
+				},
+				{ new: true },
+			)
+			.exec();
+
+		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+		return result;
 	}
 
 	public async updateProperty(memberId: ObjectId, input: PropertyUpdate): Promise<Property> {
@@ -150,19 +166,35 @@ export class PropertyService {
 		}
 	}
 
-	public async propertyStatsEditor(input: StatisticModifier): Promise<Property> {
-		const { _id, targetKey, modifier } = input;
+	public async getAgentProperties(memberId: ObjectId, input: AgentPropertiesInquiry): Promise<Properties> {
+		const { propertyStatus } = input.search;
+		if (propertyStatus === PropertyStatus.DELETE) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+		const match = {
+			memberId,
+			propertyStatus: propertyStatus ?? { $ne: PropertyStatus.DELETE },
+		};
+		const sort = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+
 		const result = await this.propertyModel
-			.findOneAndUpdate(
-				_id,
+			.aggregate([
+				{ $match: match },
+				{ $sort: sort },
 				{
-					$inc: { [targetKey]: modifier },
+					$facet: {
+						list: [
+							{ $skip: (input.page - 1) * input.limit },
+							{ $limit: input.limit },
+							lookupMember,
+							{ $unwind: '$memberData' },
+						],
+						metaCounter: [{ $count: 'total' }],
+					},
 				},
-				{ new: true },
-			)
+			])
 			.exec();
 
-		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
-		return result;
+		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+		return result[0] as Properties;
 	}
 }
