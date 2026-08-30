@@ -95,4 +95,13 @@ export class PropertyResolver {
 		input._id = shapeInToMongoObjectId(input._id);
 		return await this.propertyService.updatePropertyByAdmin(input);
 	}
+
+	@Roles(MemberType.ADMIN)
+	@UseGuards(RolesGuard)
+	@Mutation(() => Property)
+	public async removePropertyByAdmin(@Args('propertyId') input: string): Promise<Property> {
+		console.log('Query: removePropertyByAdmin');
+		const propertyId = shapeInToMongoObjectId(input);
+		return await this.propertyService.removePropertyByAdmin(propertyId);
+	}
 }
