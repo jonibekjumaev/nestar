@@ -1,7 +1,7 @@
 import { Field, Float, InputType, Int } from '@nestjs/graphql';
 import { IsInt, IsNotEmpty, IsOptional, Length, Min } from 'class-validator';
 import { PropertyLocation, PropertyType } from '../../enums/property.enum';
-import { ObjectId } from '../../types/common';
+import type { ObjectId } from '../../types/common';
 
 @InputType()
 export class PropertyInput {
