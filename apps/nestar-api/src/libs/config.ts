@@ -15,6 +15,7 @@ export const aviablePropertySorts = [
 	'propertyPrice',
 ];
 
+export const aviableBoardArticleSorts = ['createdAt', 'updatedAt', 'articleLikes', 'articleViews'];
 /**  IMAGE CONFIGURATION  **/
 
 export const validMimeTypes = ['image/png', 'image/jpg', 'image/jpeg'];
