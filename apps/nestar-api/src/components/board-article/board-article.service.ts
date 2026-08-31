@@ -1,9 +1,132 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { BoardArticle } from '../../libs/dto/board-article/board-article';
+import { BoardArticle, BoardArticles } from '../../libs/dto/board-article/board-article';
 import { Model } from 'mongoose';
+import { MemberService } from '../member/member.service';
+import type { ObjectId, StatisticModifier, T } from '../../libs/types/common';
+import { BoardArticleInput, BoardArticlesInquiry } from '../../libs/dto/board-article/board-article.input';
+import { Direction, Message } from '../../libs/enums/common.enum';
+import { BoardArticleStatus } from '../../libs/enums/board-article.enum';
+import { ViewInput } from '../../libs/dto/view/view.input';
+import { ViewGroup } from '../../libs/enums/view.enum';
+import { ViewService } from '../view/view.service';
+import { BoardArticleUpdate } from '../../libs/dto/board-article/board-article.update';
+import { lookupMember, shapeInToMongoObjectId } from '../../libs/config';
 
 @Injectable()
 export class BoardArticleService {
-	constructor(@InjectModel('BoardArticle') private readonly boardArticleModel: Model<BoardArticle>) {}
+	constructor(
+		@InjectModel('BoardArticle') private readonly boardArticleModel: Model<BoardArticle>,
+		private readonly memberService: MemberService,
+		private readonly viewService: ViewService,
+	) {}
+
+	public async createBoardArticle(memberId: ObjectId, input: BoardArticleInput): Promise<BoardArticle> {
+		try {
+			input.memberId = memberId;
+			const result = await this.boardArticleModel.create(input);
+
+			await this.memberService.memberStatsEditor({
+				_id: memberId,
+				targetKey: 'memberArticles',
+				modifier: 1,
+			});
+
+			return result;
+		} catch (err) {
+			const message = err instanceof Error ? err.message : 'Unknown error occurred';
+			console.log('Error: Service.model', message);
+			throw new InternalServerErrorException(Message.CREATE_FAILED);
+		}
+	}
+
+	public async getBoardArticle(meberId: ObjectId, articleId: ObjectId): Promise<BoardArticle> {
+		const search = {
+			_id: articleId,
+			articleStatus: BoardArticleStatus.ACTIVE,
+		};
+
+		const targetBoardArticle = await this.boardArticleModel.findOne(search).lean().exec();
+		if (!targetBoardArticle) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+		if (meberId) {
+			const viewInput: ViewInput = { memberId: meberId, viewRefId: articleId, viewGroup: ViewGroup.ARTICLE };
+			const newView = await this.viewService.recordView(viewInput);
+			if (newView) {
+				await this.boardArticleStatsEditor({ _id: articleId, targetKey: 'articleViews', modifier: 1 });
+				targetBoardArticle.articleViews++;
+			}
+
+			//meliked
+		}
+		targetBoardArticle.memberData = await this.memberService.getMember(null, targetBoardArticle.memberId);
+		return targetBoardArticle;
+	}
+
+	public async boardArticleStatsEditor(input: StatisticModifier): Promise<BoardArticle> {
+		const { _id, targetKey, modifier } = input;
+
+		const result = await this.boardArticleModel
+			.findOneAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
+			.exec();
+		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+		return result;
+	}
+
+	public async updateBoardArticle(memberId: ObjectId, input: BoardArticleUpdate): Promise<BoardArticle> {
+		const search = {
+			_id: input._id,
+			memberId: memberId,
+			articleStatus: BoardArticleStatus.ACTIVE,
+		};
+
+		const result = await this.boardArticleModel.findOneAndUpdate(search, input, { new: true }).exec();
+		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+
+		if (result?.articleStatus === BoardArticleStatus.DELETE) {
+			await this.memberService.memberStatsEditor({
+				_id: memberId,
+				targetKey: 'memberArticles',
+				modifier: -1,
+			});
+		}
+
+		return result;
+	}
+
+	public async getBoardArticles(memberId: ObjectId, input: BoardArticlesInquiry): Promise<BoardArticles> {
+		const { articleCategory, text } = input.search;
+		const match: T = { articleStatus: BoardArticleStatus.ACTIVE };
+		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+
+		if (articleCategory) match.articleCategory = articleCategory;
+		if (text) match.articleTitle = { $regex: new RegExp(text, 'i') };
+		if (input.search?.memberId) {
+			match.memberId = shapeInToMongoObjectId(input.search.memberId);
+		}
+		console.log('match:', match);
+
+		const result = await this.boardArticleModel
+			.aggregate([
+				{ $match: match },
+				{ $sort: sort },
+				{
+					$facet: {
+						list: [
+							{ $skip: (input.page - 1) * input.limit },
+							{ $limit: input.limit },
+							//meliked
+							lookupMember,
+							{ $unwind: '$memberData' },
+						],
+
+						metaCounter: [{ $count: 'total' }],
+					},
+				},
+			])
+			.exec();
+		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+		return result[0] as BoardArticles;
+	}
 }
