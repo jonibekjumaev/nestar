@@ -185,7 +185,7 @@ export class BoardArticleService {
 		const { _id, targetKey, modifier } = input;
 
 		const result = await this.boardArticleModel
-			.findOneAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
+			.findByIdAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
 			.exec();
 		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
 		return result;
