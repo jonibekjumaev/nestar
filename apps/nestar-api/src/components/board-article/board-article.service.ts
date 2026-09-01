@@ -48,7 +48,7 @@ export class BoardArticleService {
 		}
 	}
 
-	public async getBoardArticle(meberId: ObjectId, articleId: ObjectId): Promise<BoardArticle> {
+	public async getBoardArticle(memberId: ObjectId, articleId: ObjectId): Promise<BoardArticle> {
 		const search = {
 			_id: articleId,
 			articleStatus: BoardArticleStatus.ACTIVE,
@@ -57,8 +57,8 @@ export class BoardArticleService {
 		const targetBoardArticle = await this.boardArticleModel.findOne(search).lean().exec();
 		if (!targetBoardArticle) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
-		if (meberId) {
-			const viewInput: ViewInput = { memberId: meberId, viewRefId: articleId, viewGroup: ViewGroup.ARTICLE };
+		if (memberId) {
+			const viewInput: ViewInput = { memberId: memberId, viewRefId: articleId, viewGroup: ViewGroup.ARTICLE };
 			const newView = await this.viewService.recordView(viewInput);
 			if (newView) {
 				await this.boardArticleStatsEditor({ _id: articleId, targetKey: 'articleViews', modifier: 1 });
@@ -66,6 +66,8 @@ export class BoardArticleService {
 			}
 
 			//meliked
+			const likeInput: LikeInput = { memberId: memberId, likeRefId: articleId, likeGroup: LikeGroup.ARTICLE };
+			targetBoardArticle.meLiked = await this.likeService.checkLikeExistence(likeInput);
 		}
 		targetBoardArticle.memberData = await this.memberService.getMember(null, targetBoardArticle.memberId);
 		return targetBoardArticle;
