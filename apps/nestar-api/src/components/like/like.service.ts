@@ -1,9 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-// import { MemberService } from '../member/member.service';
-// import { PropertyService } from '../property/property.service';
-// import { BoardArticleService } from '../board-article/board-article.service';
 import { Like } from '../../libs/dto/like/like';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { T } from '../../libs/types/common';
@@ -11,12 +8,7 @@ import { Message } from '../../libs/enums/common.enum';
 
 @Injectable()
 export class LikeService {
-	constructor(
-		@InjectModel('Like') private readonly likeModel: Model<Like>,
-		// private readonly memberService: MemberService,
-		// private readonly propertyService: PropertyService,
-		// private readonly boardArticleService: BoardArticleService,
-	) {}
+	constructor(@InjectModel('Like') private readonly likeModel: Model<Like>) {}
 
 	public async toggleLike(input: LikeInput): Promise<number> {
 		const search: T = { memberId: input.memberId, likeRefId: input.likeRefId };
