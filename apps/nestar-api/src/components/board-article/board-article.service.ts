@@ -15,7 +15,7 @@ import { ViewInput } from '../../libs/dto/view/view.input';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { ViewService } from '../view/view.service';
 import { BoardArticleUpdate } from '../../libs/dto/board-article/board-article.update';
-import { lookupMember, shapeInToMongoObjectId } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupMember, shapeInToMongoObjectId } from '../../libs/config';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { LikeService } from '../like/like.service';
