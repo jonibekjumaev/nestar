@@ -99,7 +99,7 @@ export class PropertyService {
 		return result;
 	}
 
-	public async getProperties(meberId: ObjectId, input: PropertiesInquiry): Promise<Properties> {
+	public async getProperties(memberId: ObjectId, input: PropertiesInquiry): Promise<Properties> {
 		const match = { propertyStatus: PropertyStatus.ACTIVE };
 		const sort = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
@@ -116,7 +116,8 @@ export class PropertyService {
 							{ $skip: (input.page - 1) * input.limit },
 							{ $limit: input.limit },
 							//meliked
-							lookupAuthMemberLiked(meberId),
+							lookupAuthMemberLiked(memberId),
+
 							lookupMember,
 							{ $unwind: '$memberData' },
 						],

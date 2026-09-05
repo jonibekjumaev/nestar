@@ -2,7 +2,6 @@ import { Types } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import { T } from './types/common';
-import { pipeline } from 'stream';
 
 export const aviableAgentSorts = ['createdAt', 'updatedAt', 'memberLikes', 'memberViews', 'memberRank'];
 export const aviableMemberSorts = ['createdAt', 'updatedAt', 'memberLikes', 'memberViews'];
@@ -38,6 +37,7 @@ export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id')
 		$lookup: {
 			from: 'likes',
 			let: {
+				// let bu yerda tashqaridan kirib kelgan variable ni MongoDb ga tanishtiryapdi
 				localLikeRefId: targetRefId,
 				localMemberRefId: memberId,
 				localMyFavorite: true,
@@ -46,6 +46,7 @@ export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id')
 				{
 					$match: {
 						$expr: {
+							// $expr: - ikki tomonlama dinamik solishtirish
 							$and: [{ $eq: ['$likeRefId', '$$localLikeRefId'] }, { $eq: ['$memberId', '$$localMemberRefId'] }],
 						},
 					},
