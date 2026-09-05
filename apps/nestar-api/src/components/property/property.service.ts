@@ -17,7 +17,7 @@ import { ViewService } from '../view/view.service';
 import { ViewInput } from '../../libs/dto/view/view.input';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import moment from 'moment';
-import { lookupMember, shapeInToMongoObjectId } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupMember, shapeInToMongoObjectId } from '../../libs/config';
 import { LikeService } from '../like/like.service';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
@@ -116,6 +116,7 @@ export class PropertyService {
 							{ $skip: (input.page - 1) * input.limit },
 							{ $limit: input.limit },
 							//meliked
+							lookupAuthMemberLiked(meberId),
 							lookupMember,
 							{ $unwind: '$memberData' },
 						],
