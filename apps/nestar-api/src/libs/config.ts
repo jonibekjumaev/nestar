@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
-import { T } from './types/common';
+import { ObjectId } from './types/common';
 
 export const aviableAgentSorts = ['createdAt', 'updatedAt', 'memberLikes', 'memberViews', 'memberRank'];
 export const aviableMemberSorts = ['createdAt', 'updatedAt', 'memberLikes', 'memberViews'];
@@ -32,7 +32,7 @@ export const shapeInToMongoObjectId = (target: string | Types.ObjectId): Types.O
 	return typeof target === 'string' ? new Types.ObjectId(target) : target;
 };
 
-export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id') => {
+export const lookupAuthMemberLiked = (memberId: ObjectId, targetRefId: string = '$_id') => {
 	return {
 		$lookup: {
 			from: 'likes',
@@ -66,8 +66,8 @@ export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id')
 };
 
 interface LookupAuthMemberFollowed {
-	followerId: T;
-	followingId: T;
+	followerId: ObjectId | string;
+	followingId: ObjectId | string;
 }
 
 export const lookupAuthMemberFollowed = (input: LookupAuthMemberFollowed) => {
@@ -78,23 +78,23 @@ export const lookupAuthMemberFollowed = (input: LookupAuthMemberFollowed) => {
 			let: {
 				localFollowerId: followerId,
 				localFollowingId: followingId,
-				localmyFollowing: true,
+				localMyFollowing: true,
 			},
 			pipeline: [
 				{
 					$match: {
 						$expr: {
-							$and: [ {$eq: [ '$followerId', '$$localFollowerId' ]}, { ['$followingId: localFollowingId'] } ],
+							$and: [{ $eq: ['$followerId', '$$localFollowerId'] }, { $eq: ['$followingId', '$$localFollowingId'] }],
 						},
 					},
 				},
 				{
 					$project: {
-						 _id: 0,
-						 followerId: 1,
-						 followingId: 1,
-						 myFollowing: '$$localMyFavorite',
-					}
+						_id: 0,
+						followerId: 1,
+						followingId: 1,
+						myFollowing: '$$localMyFollowing',
+					},
 				},
 			],
 			as: 'meFollowed',
@@ -126,5 +126,14 @@ export const lookupFollowerData = {
 		localField: 'followerId',
 		foreignField: '_id',
 		as: 'followerData',
+	},
+};
+
+export const lookupFavorite = {
+	$lookup: {
+		from: 'members',
+		localField: 'favoriteProperty.memberId',
+		foreignField: '_id',
+		as: 'favoriteProperty.memberData',
 	},
 };
