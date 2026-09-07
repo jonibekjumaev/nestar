@@ -9,6 +9,7 @@ import { ComponentsModule } from './components/components.module';
 import { DatabaseModule } from './database/database.module';
 import { FormattedErrorExtensions } from './libs/types/common';
 import { GraphQLFormattedError } from 'graphql';
+import { SocketModule } from './socket/socket.module';
 
 @Module({
 	imports: [
@@ -37,6 +38,7 @@ import { GraphQLFormattedError } from 'graphql';
 		}),
 		ComponentsModule,
 		DatabaseModule,
+		SocketModule,
 	],
 	controllers: [AppController],
 	providers: [AppService, AppResolver],
